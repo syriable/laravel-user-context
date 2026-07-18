@@ -22,9 +22,6 @@ use Syriable\UserContext\Http\Middleware\TrackUserContext;
 use Syriable\UserContext\Listeners\HandleLogout;
 use Syriable\UserContext\Listeners\HandleSuccessfulLogin;
 use Syriable\UserContext\Support\PackageCache;
-use Syriable\UserContext\View\Components\Heartbeat;
-use Syriable\UserContext\View\Components\LocalTime;
-use Syriable\UserContext\View\Components\UserPresence;
 
 final class UserContextServiceProvider extends PackageServiceProvider
 {
@@ -76,9 +73,10 @@ final class UserContextServiceProvider extends PackageServiceProvider
 
     private function registerBladeComponents(): void
     {
-        Blade::component(UserPresence::class, 'user-presence', 'user-context');
-        Blade::component(LocalTime::class, 'local-time', 'user-context');
-        Blade::component(Heartbeat::class, 'heartbeat', 'user-context');
+        // Blade::component()'s $prefix joins with a hyphen ("user-context-heartbeat"),
+        // not "::". componentNamespace() is what actually resolves <x-user-context::heartbeat />
+        // by kebab-case-matching the tag name to a class in this namespace.
+        Blade::componentNamespace('Syriable\\UserContext\\View\\Components', 'user-context');
     }
 
     private function registerRoutes(): void
