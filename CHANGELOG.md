@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-user-context` will be documented in this file.
 
+## 1.0.1 - 2026-07-18
+
+### What's Changed
+
+* fix: Blade components did not resolve via the documented :: tag syntax by @alkhatibsy in https://github.com/syriable/laravel-user-context/pull/3
+
+**Full Changelog**: https://github.com/syriable/laravel-user-context/compare/1.0.0...1.0.1
+
 ## 1.0.0 - 2026-07-18
 
 ### What's Changed
