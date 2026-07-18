@@ -26,14 +26,21 @@ All notable changes to `laravel-user-context` will be documented in this file.
 
 ## Unreleased
 
+### Changed
+
+- **Safer privacy defaults.** `ip.privacy` defaults to `anonymize`;
+  `geolocation.driver` defaults to `null` (opt into `ipinfo` / `maxmind` /
+  `ipapi`); `queue.enabled` defaults to `true` so geo lookups never block
+  the request path; package routes include `throttle:60,1`.
+
 ### Added
 
 - Presence tracking: online/offline detection derived from `last_seen_at` against a
   configurable timeout, activity-throttled middleware, heartbeat endpoint and Blade
   component, `online()`/`offline()` scopes, and `UserOnline`/`UserOffline` events.
 - IP geolocation with a pluggable `GeolocationProvider` contract and `ipapi`,
-  `ipinfo`, `maxmind` and `null` drivers, a caching decorator, and a queue-friendly
-  (sync-by-default) `ResolveUserLocation` job.
+  `ipinfo`, `maxmind` and `null` drivers, a caching decorator, and a
+  queue-by-default `ResolveUserLocation` job.
 - Timezone awareness: IANA-based, DST-aware `Timezone` helper with `now()`,
   `dayPeriod()`, `isNight()` and localized `greeting()`, plus user-to-user
   `TimeComparison` (`timeFor()`) with offset and convenient-time detection.

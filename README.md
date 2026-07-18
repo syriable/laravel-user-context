@@ -6,14 +6,15 @@
 
 > Know who is **online**, **where** they are, and **what time it is for them** — presence, timezone awareness, locale context and login metadata for any Laravel app.
 
-A lightweight, database-driven foundation package. No Redis, no queue worker required,
-no heavy dependencies — it runs on shared hosting and scales to millions of users.
+A lightweight, database-driven foundation package. No Redis, no heavy dependencies —
+presence works without a queue worker; geolocation lookups are queued by default
+so they never block the request path.
 
 ```php
-$user->presence()->isOnline();          // true
-$user->presence()->lastSeen();           // CarbonImmutable
-$user->location()->country();            // "Sweden"
-$user->timezone()->currentTime();        // 15:30 local
+$user->isOnline();                       // true
+$user->presence()->lastSeen();           // CarbonImmutable|null
+$user->location()->countryName();        // "Sweden" (from ISO country code)
+$user->timezone()->now();                // CarbonImmutable in the user's zone
 $user->greeting();                       // "Good afternoon"
 
 // A user in New York checking the best time to message a user in Shanghai:
@@ -74,10 +75,23 @@ tracked automatically.
 
 ## Documentation
 
-- **[Configuration](docs/configuration.md)** — every config key, its default and effect.
-- **[Usage](docs/usage.md)** — presence, timezones, user-to-user comparison, Blade, API.
-- **[Extending](docs/extending.md)** — custom geolocation drivers, events, swapping models.
-- **[Architecture Decisions](docs/adr.md)** — why the package is built the way it is.
+Publish the config (`php artisan vendor:publish --tag="laravel-user-context-config"`)
+and read the comments in `config/user-context.php` for every key. Notable defaults:
+
+| Key | Default | Why |
+|---|---|---|
+| `ip.privacy` | `anonymize` | Store `/24` (IPv4) / `/48` (IPv6) — not raw IPs |
+| `geolocation.driver` | `null` | No external lookup until you opt into `ipinfo` / `maxmind` / `ipapi` |
+| `queue.enabled` | `true` | Geo lookups never block the request that recorded activity |
+| `routes.middleware` | `web, auth, throttle:60,1` | Heartbeat is auth-gated and rate-limited |
+
+```php
+use Syriable\UserContext\Facades\UserContext;
+
+UserContext::isOnline($user);
+UserContext::timezoneFor($user)->now();
+UserContext::for($user); // ContextSnapshot
+```
 
 ## Usage at a glance
 

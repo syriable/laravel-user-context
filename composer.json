@@ -1,6 +1,6 @@
 {
     "name": "syriable/laravel-user-context",
-    "description": "User presence, timezone awareness, locale context and login metadata for Laravel — know who is online, where they are, and what time it is for them.",
+    "description": "User presence, timezone awareness, locale context and login metadata for Laravel \u2014 know who is online, where they are, and what time it is for them.",
     "keywords": [
         "syriable",
         "laravel",

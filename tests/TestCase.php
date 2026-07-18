@@ -47,6 +47,10 @@ abstract class TestCase extends Orchestra
         // Never make real geolocation HTTP calls during the test suite;
         // geolocation behavior is exercised with explicit fake providers.
         config()->set('user-context.geolocation.driver', 'null');
+
+        // Keep activity → geo resolution synchronous in tests so assertions
+        // on location state do not depend on a queue worker.
+        config()->set('user-context.queue.enabled', false);
     }
 
     private function setUpDatabase(): void

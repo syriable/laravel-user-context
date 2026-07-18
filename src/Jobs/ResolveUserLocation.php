@@ -15,9 +15,9 @@ use Syriable\UserContext\Contracts\GeolocationProvider;
 
 /**
  * Resolves an IP address to a location and applies it to the user's
- * context. Queue-friendly, never queue-dependent: with the default
- * configuration (`user-context.queue.enabled` = false) the job runs
- * synchronously in-process.
+ * context. Queued by default (`user-context.queue.enabled` = true);
+ * set that flag to false to run the job synchronously in-process when
+ * no queue worker is available.
  */
 final class ResolveUserLocation implements ShouldQueue
 {

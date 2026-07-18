@@ -59,7 +59,9 @@ return [
     'routes' => [
         'enabled' => true,
         'prefix' => 'user-context',
-        'middleware' => ['web', 'auth'],
+        // throttle:60,1 covers heartbeat storms without affecting normal use
+        // (the Blade component defaults to a 60s interval).
+        'middleware' => ['web', 'auth', 'throttle:60,1'],
         'expose_me' => true,
     ],
 
@@ -87,7 +89,11 @@ return [
     */
     'geolocation' => [
         'enabled' => true,
-        'driver' => 'ipapi',
+        // Default is "null" (no external lookup). Opt into "ipinfo"
+        // (HTTPS) or "maxmind" (local DB) for production; the free
+        // "ipapi" driver uses cleartext HTTP and should only be used
+        // when you accept that trade-off.
+        'driver' => 'null',
         'cache_ttl' => 60 * 60 * 24 * 7,
         'timeout' => 2,
         'drivers' => [
@@ -104,12 +110,13 @@ return [
     |--------------------------------------------------------------------------
     | Queue
     |--------------------------------------------------------------------------
-    | Geolocation lookups run as a job. By default the job is executed
-    | synchronously (no queue worker required). Enable this to push lookups
-    | onto a queue instead.
+    | Geolocation lookups run as a job. Queued by default so a slow
+    | provider never blocks the request that recorded the activity —
+    | set enabled to false only when you have no queue worker and accept
+    | synchronous lookups (up to `geolocation.timeout` seconds).
     */
     'queue' => [
-        'enabled' => false,
+        'enabled' => true,
         'connection' => null,
         'queue' => null,
     ],
@@ -124,9 +131,11 @@ return [
     | never persists the address (geolocation still works — the raw IP is
     | only used in memory for the lookup). `skip_private` skips geolocation
     | for private/reserved ranges such as 127.0.0.1 or 10.0.0.0/8.
+    | Default is "anonymize" — store raw addresses only when you have a
+    | clear reason and a retention policy.
     */
     'ip' => [
-        'privacy' => 'store',
+        'privacy' => 'anonymize',
         'skip_private' => true,
     ],
 
