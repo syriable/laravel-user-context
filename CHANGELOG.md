@@ -2,9 +2,24 @@
 
 All notable changes to `laravel-user-context` will be documented in this file.
 
+## 1.0.0 - 2026-07-18
+
+### What's Changed
+
+* feat: user presence, timezone, locale and login context by @alkhatibsy in https://github.com/syriable/laravel-user-context/pull/2
+* Bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/syriable/laravel-user-context/pull/1
+
+### New Contributors
+
+* @alkhatibsy made their first contribution in https://github.com/syriable/laravel-user-context/pull/2
+* @dependabot[bot] made their first contribution in https://github.com/syriable/laravel-user-context/pull/1
+
+**Full Changelog**: https://github.com/syriable/laravel-user-context/commits/1.0.0
+
 ## Unreleased
 
 ### Added
+
 - Presence tracking: online/offline detection derived from `last_seen_at` against a
   configurable timeout, activity-throttled middleware, heartbeat endpoint and Blade
   component, `online()`/`offline()` scopes, and `UserOnline`/`UserOffline` events.
