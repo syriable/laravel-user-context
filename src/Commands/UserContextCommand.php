@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Syriable\UserContext\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class UserContextCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-user-context';
 
     public $description = 'My command';
 
