@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-user-context` will be documented in this file.
 
+## 1.0.2 - 2026-07-18
+
+**Full Changelog**: https://github.com/syriable/laravel-user-context/compare/1.0.1...1.0.2
+
 ## 1.0.1 - 2026-07-18
 
 ### What's Changed
