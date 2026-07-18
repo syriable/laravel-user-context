@@ -1,10 +1,16 @@
 {
     "name": "syriable/laravel-user-context",
-    "description": "This is my package laravel-user-context",
+    "description": "User presence, timezone awareness, locale context and login metadata for Laravel — know who is online, where they are, and what time it is for them.",
     "keywords": [
         "syriable",
         "laravel",
-        "laravel-user-context"
+        "laravel-user-context",
+        "presence",
+        "online",
+        "timezone",
+        "geolocation",
+        "locale",
+        "last-seen"
     ],
     "homepage": "https://github.com/syriable/laravel-user-context",
     "license": "MIT",
@@ -16,13 +22,17 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": "^8.3",
         "spatie/laravel-package-tools": "^1.16",
         "illuminate/contracts": "^11.0||^12.0||^13.0"
+    },
+    "suggest": {
+        "geoip2/geoip2": "Required to use the MaxMind GeoLite2 local database geolocation driver (^3.0)."
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.24.1",
+        "geoip2/geoip2": "^3.1",
         "larastan/larastan": "^3.9.6",
         "laravel/boost": "^2.4",
         "laravel/pao": "^1.0.6",

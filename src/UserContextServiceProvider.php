@@ -1,25 +1,122 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\UserContext;
 
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Syriable\UserContext\Commands\UserContextCommand;
+use Syriable\UserContext\Commands\PruneLoginRecordsCommand;
+use Syriable\UserContext\Commands\SweepOfflineCommand;
+use Syriable\UserContext\Contracts\GeolocationProvider;
+use Syriable\UserContext\Geolocation\CachingGeolocator;
+use Syriable\UserContext\Geolocation\GeolocationManager;
+use Syriable\UserContext\Http\Middleware\TrackUserContext;
+use Syriable\UserContext\Listeners\HandleLogout;
+use Syriable\UserContext\Listeners\HandleSuccessfulLogin;
+use Syriable\UserContext\Support\PackageCache;
+use Syriable\UserContext\View\Components\Heartbeat;
+use Syriable\UserContext\View\Components\LocalTime;
+use Syriable\UserContext\View\Components\UserPresence;
 
-class UserContextServiceProvider extends PackageServiceProvider
+final class UserContextServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
         $package
             ->name('laravel-user-context')
             ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_laravel_user_context_table')
-            ->hasCommand(UserContextCommand::class);
+            ->hasViews('user-context')
+            ->hasTranslations()
+            ->hasMigrations([
+                'create_user_contexts_table',
+                'create_user_login_records_table',
+            ])
+            ->hasCommands([
+                SweepOfflineCommand::class,
+                PruneLoginRecordsCommand::class,
+            ]);
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->singleton(UserContextManager::class);
+
+        $this->app->singleton(GeolocationManager::class, fn (Application $app): GeolocationManager => new GeolocationManager($app));
+
+        $this->app->bind(GeolocationProvider::class, function (Application $app): GeolocationProvider {
+            $provider = $app->make(GeolocationManager::class)->driver();
+
+            $ttl = (int) config('user-context.geolocation.cache_ttl', 604800);
+
+            if ($ttl <= 0) {
+                return $provider;
+            }
+
+            /** @var Repository $cache */
+            $cache = PackageCache::store();
+
+            return new CachingGeolocator($provider, $cache, $ttl);
+        });
+    }
+
+    public function packageBooted(): void
+    {
+        $this->registerBladeComponents();
+        $this->registerRoutes();
+        $this->registerAuthListeners();
+    }
+
+    private function registerBladeComponents(): void
+    {
+        Blade::component(UserPresence::class, 'user-presence', 'user-context');
+        Blade::component(LocalTime::class, 'local-time', 'user-context');
+        Blade::component(Heartbeat::class, 'heartbeat', 'user-context');
+    }
+
+    private function registerRoutes(): void
+    {
+        if (! (bool) config('user-context.routes.enabled', true)) {
+            return;
+        }
+
+        $middleware = config('user-context.routes.middleware', ['web', 'auth']);
+
+        Route::group([
+            'prefix' => config('user-context.routes.prefix', 'user-context'),
+            'middleware' => is_array($middleware) ? $middleware : ['web', 'auth'],
+            'as' => 'user-context.',
+        ], function (): void {
+            $this->loadRoutesFrom(__DIR__.'/../routes/user-context.php');
+        });
+    }
+
+    private function registerAuthListeners(): void
+    {
+        if ((bool) config('user-context.login_history.enabled', true) || (bool) config('user-context.geolocation.enabled', true)) {
+            Event::listen(Login::class, HandleSuccessfulLogin::class);
+        }
+
+        Event::listen(Logout::class, HandleLogout::class);
+    }
+
+    /**
+     * @return array<int, class-string>
+     */
+    public function provides(): array
+    {
+        return [
+            UserContextManager::class,
+            GeolocationManager::class,
+            GeolocationProvider::class,
+            TrackUserContext::class,
+        ];
     }
 }
