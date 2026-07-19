@@ -38,6 +38,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Presence source
+    |--------------------------------------------------------------------------
+    | Where presence signals (last-seen, online status, IP and user agent)
+    | are read from:
+    |
+    |   "auto"     — use Laravel's `sessions` table when the `database`
+    |                session driver is active and the table exists,
+    |                otherwise fall back to the package's own columns.
+    |   "sessions" — always read from Laravel's `sessions` table (requires
+    |                the `database` session driver).
+    |   "table"    — always read from the package's `user_contexts` columns
+    |                (works on every session driver and for polymorphic
+    |                user models; keeps the package's IP privacy modes).
+    |
+    | "auto" targets applications with a single authenticatable type. The
+    | package still writes its own columns regardless of this setting, so
+    | switching sources never loses data.
+    */
+    'presence' => [
+        'source' => env('USER_CONTEXT_PRESENCE_SOURCE', 'auto'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Models
     |--------------------------------------------------------------------------
     | Swap these for your own models to add relationships or behavior. Your

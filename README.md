@@ -112,6 +112,34 @@ Keep a browser tab "online" with the bundled heartbeat component:
 <x-user-context::heartbeat />
 ```
 
+#### Presence source
+
+Laravel's `database` session driver already records `last_activity`,
+`ip_address` and `user_agent` for the authenticated user on every request.
+Rather than duplicate that, the package can read presence straight from
+Laravel's own `sessions` table. This is controlled by `presence.source`:
+
+| Value        | Behavior |
+|--------------|----------|
+| `auto` (default) | Read from `sessions` when the `database` session driver is active and the table exists; otherwise fall back to the package's own columns. |
+| `sessions`   | Always read from Laravel's `sessions` table (requires the `database` session driver). |
+| `table`      | Always read from the package's `user_contexts` columns — works on every session driver, supports polymorphic user models, and keeps the package's IP privacy modes. |
+
+`auto` targets applications with a single authenticatable type. Presence
+reads (`isOnline()`, `presence()->lastSeen()`, `location()->ipAddress()`,
+`location()->userAgent()`) flow through the active source; login/logout
+timestamps, timezone, locale and geolocation always come from the package's
+own table, since Laravel's `sessions` table does not record them. The
+package still writes its own columns regardless of this setting, so
+switching sources never loses data.
+
+> [!NOTE]
+> In `sessions` mode `location()->ipAddress()` returns the raw address
+> Laravel stores on the session row; the `user-context.ip.privacy` modes
+> (anonymize / hash / discard) apply only in `table` mode. Multi-guard or
+> polymorphic setups should use the `table` source, because Laravel's
+> `sessions.user_id` has no morph type.
+
 ### Timezone & locale
 
 ```php
@@ -132,6 +160,8 @@ UserContext::overrideLocale($user, 'de');
 $user->location()->countryCode();        // "SE"
 $user->location()->countryName();        // "Sweden"
 $user->location()->city();               // "Stockholm"
+$user->location()->ipAddress();          // last known IP (raw in sessions mode)
+$user->location()->userAgent();          // last known User-Agent, or null
 ```
 
 ### User-to-user time comparison
