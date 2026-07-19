@@ -37,12 +37,12 @@ trait HasUserContext
 
     public function presence(): Presence
     {
-        return new Presence(UserContext::contextFor($this));
+        return UserContext::presenceFor($this);
     }
 
     public function location(): Location
     {
-        return new Location(UserContext::contextFor($this));
+        return UserContext::locationFor($this);
     }
 
     public function timezone(): Timezone

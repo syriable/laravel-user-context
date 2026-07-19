@@ -5,18 +5,33 @@ declare(strict_types=1);
 namespace Syriable\UserContext\Support;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
+use Syriable\UserContext\Contracts\PresenceSource;
 use Syriable\UserContext\Models\UserContext;
 
 /**
  * Read-side proxy over a user's presence state. Null-safe: a user who
  * has never been tracked simply reads as offline.
+ *
+ * Online status and last-seen flow through the active PresenceSource when
+ * one is supplied (so they can come from Laravel's `sessions` table);
+ * login/logout timestamps always come from the context row, since the
+ * sessions table does not record them.
  */
 final readonly class Presence
 {
-    public function __construct(private ?UserContext $context) {}
+    public function __construct(
+        private ?UserContext $context,
+        private ?PresenceSource $source = null,
+        private ?Model $user = null,
+    ) {}
 
     public function isOnline(): bool
     {
+        if ($this->source !== null && $this->user !== null) {
+            return $this->source->isOnline($this->user);
+        }
+
         return $this->context?->isCurrentlyOnline() ?? false;
     }
 
@@ -27,6 +42,10 @@ final readonly class Presence
 
     public function lastSeen(): ?CarbonImmutable
     {
+        if ($this->source !== null && $this->user !== null) {
+            return $this->source->lastSeenAt($this->user);
+        }
+
         return $this->context?->last_seen_at;
     }
 

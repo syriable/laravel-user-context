@@ -10,6 +10,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Syriable\UserContext\Contracts\GeolocationProvider;
+use Syriable\UserContext\Contracts\PresenceSource;
 use Syriable\UserContext\Data\ContextSnapshot;
 use Syriable\UserContext\Data\TimeComparison;
 use Syriable\UserContext\Enums\ContextSource;
@@ -19,6 +20,8 @@ use Syriable\UserContext\Exceptions\InvalidTimezone;
 use Syriable\UserContext\Geolocation\GeolocationManager;
 use Syriable\UserContext\Models\UserContext;
 use Syriable\UserContext\Support\AcceptLanguage;
+use Syriable\UserContext\Support\Location;
+use Syriable\UserContext\Support\Presence;
 use Syriable\UserContext\Support\Timezone;
 
 /**
@@ -52,9 +55,27 @@ final class UserContextManager
         return ContextSnapshot::fromContext($this->contextFor($user));
     }
 
+    /**
+     * A read-side proxy over the user's presence, backed by the active
+     * presence source (Laravel's `sessions` table when available).
+     */
+    public function presenceFor(Model $user): Presence
+    {
+        return new Presence($this->contextFor($user), $this->presenceSource(), $user);
+    }
+
+    /**
+     * A read-side proxy over the user's last known location. IP address
+     * reads flow through the active presence source.
+     */
+    public function locationFor(Model $user): Location
+    {
+        return new Location($this->contextFor($user), $this->presenceSource(), $user);
+    }
+
     public function isOnline(Model $user): bool
     {
-        return $this->contextFor($user)->isCurrentlyOnline();
+        return $this->presenceSource()->isOnline($user);
     }
 
     public function timezoneFor(Model $user): Timezone
@@ -148,6 +169,11 @@ final class UserContextManager
     public function extendGeolocation(string $driver, Closure $callback): void
     {
         $this->container->make(GeolocationManager::class)->extend($driver, $callback);
+    }
+
+    private function presenceSource(): PresenceSource
+    {
+        return $this->container->make(PresenceSource::class);
     }
 
     /**
