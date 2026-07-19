@@ -7,9 +7,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Syriable\UserContext\Contracts\PresenceSource;
+use Syriable\UserContext\Models\UserContext as UserContextModel;
 use Syriable\UserContext\Presence\SessionPresenceSource;
 use Syriable\UserContext\Presence\TablePresenceSource;
-use Syriable\UserContext\Models\UserContext as UserContextModel;
 
 /**
  * Creates the `sessions` table Laravel ships with the database driver.
