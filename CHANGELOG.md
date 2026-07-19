@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-user-context` will be documented in this file.
 
+## 1.0.3 - 2026-07-19
+
+### What's Changed
+
+* Reuse Laravel's sessions table for presence via a PresenceSource seam by @alkhatibsy in https://github.com/syriable/laravel-user-context/pull/4
+
+**Full Changelog**: https://github.com/syriable/laravel-user-context/compare/1.0.2...1.0.3
+
 ## 1.0.2 - 2026-07-18
 
 **Full Changelog**: https://github.com/syriable/laravel-user-context/compare/1.0.1...1.0.2
